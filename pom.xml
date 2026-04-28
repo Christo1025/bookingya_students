@@ -16,13 +16,15 @@
     <artifactId>bookingya</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>bookingya</name>
-    <description>API de reservas de habitaciones estilo booking / airbnb para evaluación técnica</description>
+    <description>API de reservas tipo booking / airbnb</description>
 
     <properties>
         <java.version>17</java.version>
     </properties>
 
     <dependencies>
+
+        <!-- SPRING -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -38,12 +40,14 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- SWAGGER -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.8.8</version>
         </dependency>
 
+        <!-- UTILS -->
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
@@ -56,6 +60,7 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- DATABASE -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -68,12 +73,48 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- ===================== -->
+        <!-- TESTING (IMPORTANTE) -->
+        <!-- ===================== -->
+
+        <!-- CUCUMBER -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>7.14.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>7.14.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUNIT 5 -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <version>1.10.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- SPRING TEST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
+
+    <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <version>5.5.0</version>
+        <scope>test</scope>
+    </dependency>
 
     <build>
         <plugins>
@@ -88,4 +129,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
