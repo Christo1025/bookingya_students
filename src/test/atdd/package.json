@@ -1,0 +1,15 @@
+{
+  "name": "bookingya-atdd",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ATDD acceptance tests for BookingYa API using Playwright and TypeScript.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "typescript": "^5.8.3"
+  }
+}
