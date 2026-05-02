@@ -1,87 +1,201 @@
 package bdd;
 
-import io.cucumber.java.en.*;
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
+
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 
 public class ReservationSteps {
 
-    @Given("a room exists with ID 1")
-    public void roomExists() {
-        System.out.println("Room with ID 1 exists");
+    private String roomId;
+    private String guestId;
+    private String reservationId;
+    private Response response;
+
+    static {
+        String envUrl = System.getenv("BOOKINGYA_API_URL");
+        RestAssured.baseURI = System.getProperty(
+            "bookingya.api.url",
+            envUrl != null && !envUrl.isBlank() ? envUrl : "http://localhost:8081/api"
+        );
     }
 
-    @Given("a guest exists with ID 1")
-    public void guestExists() {
-        System.out.println("Guest with ID 1 exists");
+    @Given("existe una habitacion disponible")
+    public void existeUnaHabitacionDisponible() {
+        String suffix = uniqueSuffix();
+
+        response = given()
+            .contentType(ContentType.JSON)
+            .body(Map.of(
+                "code", "BDD-" + suffix,
+                "name", "BDD room",
+                "city", "Bogota",
+                "maxGuests", 3,
+                "nightlyPrice", 180000,
+                "available", true
+            ))
+            .when()
+            .post("/room");
+
+        assertEquals(200, response.statusCode());
+        roomId = response.jsonPath().getString("id");
+        assertNotNull(roomId);
     }
 
-    @Given("valid check-in and check-out dates are selected")
-    public void validBookingDates() {
-        System.out.println("Valid check-in and check-out dates selected");
+    @Given("existe un huesped registrado")
+    public void existeUnHuespedRegistrado() {
+        String suffix = uniqueSuffix();
+
+        response = given()
+            .contentType(ContentType.JSON)
+            .body(Map.of(
+                "identification", "BDD-" + suffix,
+                "name", "BDD Guest",
+                "email", "bdd-" + suffix + "@example.com"
+            ))
+            .when()
+            .post("/guest");
+
+        assertEquals(200, response.statusCode());
+        guestId = response.jsonPath().getString("id");
+        assertNotNull(guestId);
     }
 
-    @Given("the number of guests is 2")
-    public void numberOfGuests() {
-        System.out.println("Number of guests: 2");
+    @Given("existe una reserva creada")
+    public void existeUnaReservaCreada() {
+        existeUnaHabitacionDisponible();
+        existeUnHuespedRegistrado();
+        elUsuarioCreaUnaReservaValida();
+        laReservaDebeCrearseExitosamente();
     }
 
-    @When("the user creates the booking")
-    public void createBooking() {
-        System.out.println("Creating booking");
+    @When("el usuario crea una reserva valida")
+    public void elUsuarioCreaUnaReservaValida() {
+        response = given()
+            .contentType(ContentType.JSON)
+            .body(Map.of(
+                "roomId", roomId,
+                "guestId", guestId,
+                "checkIn", "2026-08-10T14:00:00",
+                "checkOut", "2026-08-12T11:00:00",
+                "guestsCount", 2,
+                "notes", "BDD reservation"
+            ))
+            .when()
+            .post("/reservation");
+
+        if (response.statusCode() == 200) {
+            reservationId = response.jsonPath().getString("id");
+        }
     }
 
-    @Then("the booking should be created successfully")
-    public void bookingCreatedSuccessfully() {
-        assertTrue(true);
+    @When("el usuario consulta la reserva por ID")
+    public void elUsuarioConsultaLaReservaPorId() {
+        response = given()
+            .when()
+            .get("/reservation/{id}", reservationId);
     }
 
-    @Given("a booking already exists in the system")
-    public void bookingAlreadyExists() {
-        System.out.println("Booking already exists");
+    @When("el usuario consulta todas las reservas")
+    public void elUsuarioConsultaTodasLasReservas() {
+        response = given()
+            .when()
+            .get("/reservation");
     }
 
-    @When("the user searches for the booking")
-    public void searchBooking() {
-        System.out.println("Searching booking");
+    @When("el usuario consulta las reservas del huesped")
+    public void elUsuarioConsultaLasReservasDelHuesped() {
+        response = given()
+            .when()
+            .get("/reservation/guest/{guestId}", guestId);
     }
 
-    @Then("the booking information should be displayed correctly")
-    public void bookingInformationDisplayed() {
-        assertTrue(true);
+    @When("el usuario actualiza la reserva")
+    public void elUsuarioActualizaLaReserva() {
+        response = given()
+            .contentType(ContentType.JSON)
+            .body(Map.of(
+                "roomId", roomId,
+                "guestId", guestId,
+                "checkIn", "2026-08-10T14:00:00",
+                "checkOut", "2026-08-13T11:00:00",
+                "guestsCount", 2,
+                "notes", "BDD reservation updated"
+            ))
+            .when()
+            .put("/reservation/{id}", reservationId);
     }
 
-    @When("the user updates the check-out date and notes")
-    public void updateBooking() {
-        System.out.println("Updating booking check-out date and notes");
+    @When("el usuario cancela la reserva")
+    public void elUsuarioCancelaLaReserva() {
+        response = given()
+            .when()
+            .delete("/reservation/{id}", reservationId);
     }
 
-    @Then("the booking should be updated successfully")
-    public void bookingUpdatedSuccessfully() {
-        assertTrue(true);
+    @Then("la reserva debe crearse exitosamente")
+    public void laReservaDebeCrearseExitosamente() {
+        assertEquals(200, response.statusCode());
+        assertNotNull(reservationId);
+        assertEquals(roomId, response.jsonPath().getString("roomId"));
+        assertEquals(guestId, response.jsonPath().getString("guestId"));
     }
 
-    @When("the user deletes the booking")
-    public void deleteBooking() {
-        System.out.println("Deleting booking");
+    @Then("el sistema debe retornar la informacion de la reserva")
+    public void elSistemaDebeRetornarLaInformacionDeLaReserva() {
+        assertEquals(200, response.statusCode());
+        assertEquals(reservationId, response.jsonPath().getString("id"));
+        assertEquals(roomId, response.jsonPath().getString("roomId"));
+        assertEquals(guestId, response.jsonPath().getString("guestId"));
     }
 
-    @Then("the booking should be removed successfully")
-    public void bookingDeletedSuccessfully() {
-        assertTrue(true);
+    @Then("la reserva debe aparecer en la lista")
+    public void laReservaDebeAparecerEnLaLista() {
+        assertEquals(200, response.statusCode());
+        List<String> reservationIds = response.jsonPath().getList("id");
+        assertTrue(reservationIds.contains(reservationId));
     }
 
-    @Given("a booking exists with ID 1")
-    public void bookingExistsById() {
-        System.out.println("Booking with ID 1 exists");
+    @Then("la lista debe contener la reserva del huesped")
+    public void laListaDebeContenerLaReservaDelHuesped() {
+        assertEquals(200, response.statusCode());
+        List<String> reservationIds = response.jsonPath().getList("id");
+        List<String> guestIds = response.jsonPath().getList("guestId");
+
+        assertTrue(reservationIds.contains(reservationId));
+        assertTrue(guestIds.contains(guestId));
     }
 
-    @When("the user searches for the booking by ID")
-    public void searchBookingById() {
-        System.out.println("Searching booking by ID");
+    @Then("la reserva debe quedar actualizada")
+    public void laReservaDebeQuedarActualizada() {
+        assertEquals(200, response.statusCode());
+        assertEquals("2026-08-13T11:00:00", response.jsonPath().getString("checkOut"));
+        assertEquals("BDD reservation updated", response.jsonPath().getString("notes"));
     }
 
-    @Then("the system should return the correct booking information")
-    public void correctBookingInformationReturned() {
-        assertTrue(true);
+    @Then("la reserva debe quedar cancelada")
+    public void laReservaDebeQuedarCancelada() {
+        assertEquals(200, response.statusCode());
+
+        Response getDeletedReservation = given()
+            .when()
+            .get("/reservation/{id}", reservationId);
+
+        assertEquals(404, getDeletedReservation.statusCode());
+        assertEquals("Reservation not found", getDeletedReservation.jsonPath().getString("error"));
+    }
+
+    private String uniqueSuffix() {
+        return System.currentTimeMillis() + "-" + Math.abs(System.nanoTime());
     }
 }

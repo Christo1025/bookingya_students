@@ -1,29 +1,32 @@
-Feature: Booking Management
+Feature: Gestion de reservas
 
-  Scenario: Create a booking successfully
-    Given a room exists with ID 1
-    And a guest exists with ID 1
-    And valid check-in and check-out dates are selected
-    And the number of guests is 2
-    When the user creates the booking
-    Then the booking should be created successfully
+  Scenario: Crear una reserva exitosamente
+    Given existe una habitacion disponible
+    And existe un huesped registrado
+    When el usuario crea una reserva valida
+    Then la reserva debe crearse exitosamente
 
-  Scenario: Consult a booking successfully
-    Given a booking already exists in the system
-    When the user searches for the booking
-    Then the booking information should be displayed correctly
+  Scenario: Obtener una reserva por ID
+    Given existe una reserva creada
+    When el usuario consulta la reserva por ID
+    Then el sistema debe retornar la informacion de la reserva
 
-  Scenario: Update an existing booking successfully
-    Given a booking already exists in the system
-    When the user updates the check-out date and notes
-    Then the booking should be updated successfully
+  Scenario: Consultar todas las reservas
+    Given existe una reserva creada
+    When el usuario consulta todas las reservas
+    Then la reserva debe aparecer en la lista
 
-  Scenario: Delete a booking successfully
-    Given a booking already exists in the system
-    When the user deletes the booking
-    Then the booking should be removed successfully
+  Scenario: Consultar reservas por huesped
+    Given existe una reserva creada
+    When el usuario consulta las reservas del huesped
+    Then la lista debe contener la reserva del huesped
 
-  Scenario: Get a booking by ID successfully
-    Given a booking exists with ID 1
-    When the user searches for the booking by ID
-    Then the system should return the correct booking information
+  Scenario: Actualizar una reserva existente
+    Given existe una reserva creada
+    When el usuario actualiza la reserva
+    Then la reserva debe quedar actualizada
+
+  Scenario: Cancelar una reserva existente
+    Given existe una reserva creada
+    When el usuario cancela la reserva
+    Then la reserva debe quedar cancelada

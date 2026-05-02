@@ -118,9 +118,9 @@ Resultado esperado:
 BUILD SUCCESS
 ```
 
-## Fase 2: BDD
+## Fase 2: BDD con Serenity
 
-La fase BDD esta definida con Gherkin y Cucumber.
+La fase BDD esta implementada con Gherkin, Cucumber, Serenity BDD y Rest Assured.
 
 Archivos principales:
 
@@ -128,28 +128,45 @@ Archivos principales:
 src/test/resources/features/bdd/reservation.feature
 src/test/java/bdd/ReservationSteps.java
 src/test/java/bdd/CucumberTest.java
+serenity.conf
 ```
 
-El archivo `.feature` describe los escenarios en lenguaje natural. La clase `ReservationSteps` contiene los pasos en Java que conectan cada sentencia `Given`, `When` y `Then` con codigo ejecutable. La clase `CucumberTest` configura la ejecucion de Cucumber sobre los features ubicados en `src/test/resources/features/bdd`.
+El archivo `.feature` describe los escenarios en lenguaje natural. La clase `ReservationSteps` contiene los pasos en Java que conectan cada sentencia `Given`, `When` y `Then` con codigo ejecutable. La clase `CucumberTest` ejecuta Cucumber con `CucumberWithSerenity`, lo que permite generar reportes HTML de Serenity.
+
+En esta fase los pasos no usan mocks. Las pruebas consumen la API real con Rest Assured, por lo que Docker debe estar levantado antes de ejecutarlas.
 
 Escenarios definidos:
 
 - Crear una reserva correctamente.
-- Consultar una reserva correctamente.
-- Actualizar una reserva existente.
-- Eliminar una reserva.
 - Obtener una reserva por ID.
+- Consultar todas las reservas.
+- Consultar reservas por huesped.
+- Actualizar una reserva existente.
+- Cancelar una reserva.
+
+URL base por defecto:
+
+```text
+http://localhost:8081/api
+```
+
+Si se requiere otra URL:
+
+```powershell
+.\mvnw.cmd -Dbookingya.api.url=http://localhost:8081/api -Dtest=CucumberTest test serenity:aggregate
+```
 
 Ejecutar pruebas BDD junto con las pruebas Java:
 
 ```powershell
+docker compose up -d --build
 .\mvnw.cmd test
 ```
 
-Ejecutar solo el runner de Cucumber:
+Ejecutar solo el runner BDD con Serenity:
 
 ```powershell
-.\mvnw.cmd -Dtest=CucumberTest test
+.\mvnw.cmd -Dtest=CucumberTest test serenity:aggregate
 ```
 
 Resultado esperado:
@@ -157,6 +174,14 @@ Resultado esperado:
 ```text
 BUILD SUCCESS
 ```
+
+Reporte Serenity:
+
+```text
+target/site/serenity/index.html
+```
+
+Para la sustentacion, esta fase evidencia BDD porque los escenarios estan escritos en Gherkin y son ejecutados por Cucumber; tambien evidencia Serenity porque el runner usa `CucumberWithSerenity` y genera el reporte HTML.
 
 
 ## Fase 3: ATDD
@@ -277,6 +302,7 @@ Desde la raiz del proyecto:
 ```powershell
 docker compose up -d --build
 .\mvnw.cmd test
+.\mvnw.cmd -Dtest=CucumberTest test serenity:aggregate
 cd src/test/atdd
 npm install
 npm test
@@ -285,7 +311,7 @@ npm test
 Con esto se validan:
 
 - Fase 1: TDD con JUnit, Spring Boot Test y MockMvc.
-- Fase 2: BDD con Gherkin y Cucumber.
+- Fase 2: BDD con Gherkin, Cucumber, Serenity y Rest Assured.
 - Fase 3: ATDD con Playwright y TypeScript contra la API real.
 
 ## Evidencias sugeridas
@@ -293,6 +319,7 @@ Con esto se validan:
 Para la entrega o sustentacion se pueden mostrar:
 
 - Salida de `.\mvnw.cmd test` con `BUILD SUCCESS`.
+- Reporte Serenity en `target/site/serenity/index.html`.
 - Salida de `npm test` con `2 passed`.
 - Captura de Swagger en `http://localhost:8081/api/swagger-ui/index.html`.
 - Captura del reporte HTML de Playwright.
@@ -301,4 +328,3 @@ Para la entrega o sustentacion se pueden mostrar:
   - `reservation.feature`.
   - `ReservationSteps.java`.
   - `reservations.acceptance.spec.ts`.
-
