@@ -1,6 +1,7 @@
 package com.bookingya.entities;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -11,14 +12,14 @@ import lombok.Data;
 public class ReservationEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     @Column(nullable = false)
-    private Long guestId;
+    private UUID guestId;
 
     @Column(nullable = false)
-    private Long roomId;
+    private UUID roomId;
 
     @Column(nullable = false)
     private LocalDateTime checkIn;

@@ -1,16 +1,27 @@
 package com.bookingya.services;
 
 import com.bookingya.dtos.ReservationDto;
+import com.bookingya.models.Reservation;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public interface ReservationService {
 
-    Object create(ReservationDto dto);
+    Reservation create(ReservationDto dto);
 
-    Object getById(UUID id);
+    List<Reservation> getAll();
 
-    Object update(UUID id, ReservationDto dto);
+    Reservation getById(UUID id);
+
+    List<Reservation> getByRoomId(UUID roomId);
+
+    List<Reservation> getByGuestId(UUID guestId);
+
+    boolean isRoomAvailable(UUID roomId, LocalDateTime checkIn, LocalDateTime checkOut);
+
+    Reservation update(UUID id, ReservationDto dto);
 
     void delete(UUID id);
 }

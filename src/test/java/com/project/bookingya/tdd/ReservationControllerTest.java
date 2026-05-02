@@ -2,6 +2,7 @@ package com.bookingya.tdd;
 
 import com.bookingya.controllers.ReservationController;
 import com.bookingya.dtos.ReservationDto;
+import com.bookingya.models.Reservation;
 import com.bookingya.services.ReservationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +42,24 @@ class ReservationControllerTest {
         return dto;
     }
 
+    private Reservation buildReservation() {
+        Reservation reservation = new Reservation();
+        reservation.setId(reservationId);
+        reservation.setRoomId(roomId);
+        reservation.setGuestId(guestId);
+        reservation.setCheckIn(LocalDateTime.parse("2026-04-20T10:00:00"));
+        reservation.setCheckOut(LocalDateTime.parse("2026-04-25T10:00:00"));
+        reservation.setGuestsCount(2);
+        reservation.setNotes("Ocean view requested");
+        return reservation;
+    }
+
     // 1. CREACIÓN DE RESERVA
     @Test
     void shouldCreateReservation() throws Exception {
-        when(reservationService.create(any())).thenReturn(buildDto());
+        when(reservationService.create(any())).thenReturn(buildReservation());
 
-        mockMvc.perform(post("/api/reservations")
+        mockMvc.perform(post("/reservation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -64,9 +77,9 @@ class ReservationControllerTest {
     // 2. CONSULTA DE RESERVA (GET BY ID)
     @Test
     void shouldGetReservationById() throws Exception {
-        when(reservationService.getById(reservationId)).thenReturn(buildDto());
+        when(reservationService.getById(reservationId)).thenReturn(buildReservation());
 
-        mockMvc.perform(get("/api/reservations/{id}", reservationId))
+        mockMvc.perform(get("/reservation/{id}", reservationId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.roomId").value(roomId.toString()))
                 .andExpect(jsonPath("$.guestId").value(guestId.toString()));
@@ -75,9 +88,9 @@ class ReservationControllerTest {
     // 3. ACTUALIZACIÓN DE RESERVA
     @Test
     void shouldUpdateReservation() throws Exception {
-        when(reservationService.update(eq(reservationId), any())).thenReturn(buildDto());
+        when(reservationService.update(eq(reservationId), any())).thenReturn(buildReservation());
 
-        mockMvc.perform(put("/api/reservations/{id}", reservationId)
+        mockMvc.perform(put("/reservation/{id}", reservationId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -95,16 +108,16 @@ class ReservationControllerTest {
     // 4. ELIMINACIÓN DE RESERVA
     @Test
     void shouldDeleteReservation() throws Exception {
-        mockMvc.perform(delete("/api/reservations/{id}", reservationId))
+        mockMvc.perform(delete("/reservation/{id}", reservationId))
                 .andExpect(status().isOk());
     }
 
     // 5. OBTENCIÓN DE RESERVA POR ID
     @Test
     void shouldValidateReservationById() throws Exception {
-        when(reservationService.getById(reservationId)).thenReturn(buildDto());
+        when(reservationService.getById(reservationId)).thenReturn(buildReservation());
 
-        mockMvc.perform(get("/api/reservations/{id}", reservationId))
+        mockMvc.perform(get("/reservation/{id}", reservationId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.roomId").value(roomId.toString()))
                 .andExpect(jsonPath("$.guestId").value(guestId.toString()))
