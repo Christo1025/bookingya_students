@@ -301,8 +301,8 @@ Desde la raiz del proyecto:
 
 ```powershell
 docker compose up -d --build
-.\mvnw.cmd test
-.\mvnw.cmd -Dtest=CucumberTest test serenity:aggregate
+.\mvnw.cmd -Dtest=ReservationControllerTest test
+.\mvnw.cmd -Dbookingya.api.url=http://localhost:8081/api -Dtest=CucumberTest test serenity:aggregate
 cd src/test/atdd
 npm install
 npm test
@@ -314,12 +314,38 @@ Con esto se validan:
 - Fase 2: BDD con Gherkin, Cucumber, Serenity y Rest Assured.
 - Fase 3: ATDD con Playwright y TypeScript contra la API real.
 
+## Integracion continua con GitHub Actions
+
+El repositorio incluye el workflow:
+
+```text
+.github/workflows/ci.yml
+```
+
+Este flujo se ejecuta automaticamente en cada `push` o `pull_request` hacia las ramas `main` y `estudiantes`.
+
+El pipeline realiza estos pasos:
+
+- Configura Java 17.
+- Ejecuta las pruebas unitarias TDD con `ReservationControllerTest`.
+- Crea un archivo `.env` temporal para el entorno de CI.
+- Levanta la API y la base de datos con `docker compose up -d --build`.
+- Espera hasta que la API responda en `http://localhost:8081/api/v3/api-docs`.
+- Ejecuta los escenarios BDD con Serenity contra la API real.
+- Verifica que el resumen de Serenity no tenga fallos, errores ni pruebas comprometidas.
+- Publica el reporte HTML de Serenity como artefacto llamado `serenity-report`.
+- Apaga los contenedores con `docker compose down -v`.
+
+Esto evita que los escenarios BDD fallen por `Connection refused`, porque Serenity ya no se ejecuta antes de que la aplicacion este levantada.
+
 ## Evidencias sugeridas
 
 Para la entrega o sustentacion se pueden mostrar:
 
-- Salida de `.\mvnw.cmd test` con `BUILD SUCCESS`.
+- Salida de `.\mvnw.cmd -Dtest=ReservationControllerTest test` con `BUILD SUCCESS`.
+- Historial de GitHub Actions en verde.
 - Reporte Serenity en `target/site/serenity/index.html`.
+- Artefacto `serenity-report` generado por GitHub Actions.
 - Salida de `npm test` con `2 passed`.
 - Captura de Swagger en `http://localhost:8081/api/swagger-ui/index.html`.
 - Captura del reporte HTML de Playwright.
